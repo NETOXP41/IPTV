@@ -3,144 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo IPTV</title>
+    <title>PAINEL IPTV — Abertura Automática</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        :root { --primaria: #1a1a2e; --secundaria: #16213e; --destaque: #0f3460; --verde: #00d9a5; --texto: #e6e6e6; }
+        :root { --primaria: #12121f; --secundaria: #1a1a2e; --destaque: #0f3460; --acento: #00d9a5; --alerta: #ff4757; --aviso: #ffa502; --texto: #e6e6e6; }
         body { background: var(--primaria); color: var(--texto); min-height: 100vh; }
 
-        .cabecalho { background: var(--secundaria); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--verde); }
-        .cabecalho h1 { font-size: 1.5rem; color: var(--verde); }
+        .cabecalho { background: var(--secundaria); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--acento); }
+        .cabecalho h1 { font-size: 1.4rem; color: var(--acento); }
+        .cabecalho span { background: var(--destaque); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.9rem; }
 
-        .container { display: grid; grid-template-columns: 320px 1fr; gap: 1rem; padding: 1rem; height: calc(100vh - 80px); }
+        .container { display: grid; grid-template-columns: 340px 1fr; gap: 1rem; padding: 1rem; height: calc(100vh - 80px); }
 
-        .painel-lateral { background: var(--secundaria); border-radius: 8px; padding: 1rem; overflow-y: auto; }
-        .painel-lateral h2 { font-size: 1rem; margin-bottom: 1rem; color: var(--verde); }
+        .painel-lateral { background: var(--secundaria); border-radius: 8px; padding: 1.2rem; overflow-y: auto; }
+        .painel-lateral h2 { font-size: 1rem; margin: 1rem 0 0.6rem; color: var(--acento); border-bottom: 1px solid #2a4b7c; padding-bottom: 0.3rem; }
+        .painel-lateral h2:first-child { margin-top: 0; }
 
-        .form-grupo { margin-bottom: 0.8rem; }
-        label { display: block; margin-bottom: 0.3rem; font-size: 0.9rem; }
-        input, button { width: 100%; padding: 0.6rem; border: none; border-radius: 4px; font-size: 0.9rem; }
-        input { background: var(--destaque); color: #fff; }
-        button { background: var(--verde); color: #000; font-weight: bold; cursor: pointer; margin-top: 0.3rem; transition: 0.2s; }
-        button:hover { filter: brightness(1.1); }
-        .btn-remover { background: #ff4757; color: #fff; }
+        .form-grupo { margin-bottom: 0.9rem; }
+        label { display: block; margin-bottom: 0.4rem; font-size: 0.85rem; color: #ccc; }
+        input, button { width: 100%; padding: 0.7rem; border: none; border-radius: 5px; font-size: 0.9rem; }
+        input { background: var(--destaque); color: #fff; border: 1px solid #2a4b7c; }
+        input:focus { outline: none; border-color: var(--acento); }
 
-        .lista-canais { margin-top: 1.2rem; }
-        .item-canal { background: var(--destaque); padding: 0.6rem; margin: 0.4rem 0; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
-        .item-canal:hover { background: #194075; }
-        .item-canal span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+        button { background: var(--acento); color: #000; font-weight: bold; cursor: pointer; margin-top: 0.4rem; transition: 0.2s; border: none; }
+        button:hover { filter: brightness(1.15); transform: translateY(-1px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-        .area-player { background: var(--secundaria); border-radius: 8px; padding: 1rem; display: flex; flex-direction: column; }
-        .player-wrapper { flex: 1; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; min-height: 400px; }
-        video { width: 100%; height: 100%; outline: none; }
-        .sem-video { color: #888; text-align: center; }
+        .btn-importar { background: var(--aviso); color: #000; }
+        .btn-limpar { background: var(--alerta); color: #fff; margin-top: 1rem; }
+        .btn-mini { width: auto; padding: 0.2rem 0.5rem; margin: 0; font-size: 0.75rem; background: var(--alerta); color: #fff; border-radius: 3px; }
 
-        .info-canal { margin-top: 0.8rem; padding: 0.6rem; background: var(--destaque); border-radius: 4px; font-size: 0.9rem; }
+        .lista-canais { margin-top: 0.5rem; }
+        .item-canal { background: var(--destaque); padding: 0.7rem; margin: 0.4rem 0; border-radius: 5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; border-left: 4px solid transparent; transition: 0.2s; }
+        .item-canal:hover { background: #194075; border-left-color: var(--aviso); }
+        .item-canal.ativo { background: #194075; border-left-color: var(--acento); font-weight: bold; }
+        .item-canal span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
 
-        @media(max-width: 900px) {
+        .area-player { background: var(--secundaria); border-radius: 8px; padding: 1.2rem; display: flex; flex-direction: column; }
+        .player-wrapper { flex: 1; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; min-height: 420px; position: relative; }
+        video { width: 100%; height: 100%; outline: none; background: #000; }
+
+        .estado-player { position: absolute; text-align: center; padding: 2rem; color: #aaa; }
+        .estado-player.carregando { color: var(--aviso); }
+        .estado-player.erro { color: var(--alerta); }
+        .estado-player.sucesso { display: none; }
+
+        .info-canal { margin-top: 1rem; padding: 0.8rem; background: var(--destaque); border-radius: 5px; font-size: 0.85rem; line-height: 1.5; }
+        .info-canal strong { color: var(--acento); }
+
+        .barra-status { margin-top: 0.6rem; font-size: 0.8rem; color: #888; }
+        .status-ok { color: var(--acento); }
+        .status-erro { color: var(--alerta); }
+
+        @media(max-width: 920px) {
             .container { grid-template-columns: 1fr; }
+            .player-wrapper { min-height: 300px; }
         }
     </style>
 </head>
 <body>
 
     <header class="cabecalho">
-        <h1>📺 PAINEL ADMINISTRATIVO IPTV</h1>
+        <h1>📺 PAINEL IPTV — CANAIS ABREM AO CLICAR</h1>
         <span id="total-canais">0 canais</span>
     </header>
 
     <div class="container">
         <!-- LATERAL: CADASTRO E LISTA -->
         <aside class="painel-lateral">
-            <h2>➕ Adicionar Canal / Lista M3U</h2>
+            <h2>➕ ADICIONAR CANAL</h2>
 
             <div class="form-grupo">
                 <label>Nome do Canal:</label>
-                <input type="text" id="nome-canal" placeholder="Ex: Globo, SBT...">
+                <input type="text" id="nome-canal" placeholder="Ex: Globo, SBT, Record...">
             </div>
             <div class="form-grupo">
-                <label>URL do Canal (.m3u8 / .ts):</label>
-                <input type="url" id="url-canal" placeholder="http://.../stream.m3u8">
+                <label>URL do Canal (.m3u8 / .ts / .mp4):</label>
+                <input type="url" id="url-canal" placeholder="http://endereco/stream.m3u8">
             </div>
-            <button onclick="adicionarCanal()">ADICIONAR CANAL</button>
+            <button onclick="adicionarCanal()">➕ ADICIONAR CANAL</button>
 
-            <hr style="margin:1rem 0; border-color:#0f3460;">
-
+            <h2>📂 IMPORTAR LISTA</h2>
             <div class="form-grupo">
-                <label>📂 Carregar Lista M3U (arquivo):</label>
+                <label>Arquivo .m3u / .m3u8:</label>
                 <input type="file" id="arquivo-m3u" accept=".m3u,.m3u8">
             </div>
-            <button onclick="carregarM3U()">IMPORTAR LISTA</button>
+            <button class="btn-importar" onclick="carregarM3U()">📂 IMPORTAR LISTA COMPLETA</button>
 
             <div class="lista-canais">
-                <h2>📋 Canais Cadastrados</h2>
+                <h2>📋 CANAIS CADASTRADOS — CLIQUE PARA ABRIR</h2>
                 <div id="lista"></div>
-                <button class="btn-remover" onclick="limparLista()">LIMPAR TODOS</button>
+                <button class="btn-limpar" onclick="limparLista()">🗑️ REMOVER TODOS OS CANAIS</button>
             </div>
         </aside>
 
-        <!-- DIREITA: PLAYER -->
+        <!-- DIREITA: PLAYER COM ABERTURA AUTOMÁTICA -->
         <main class="area-player">
             <div class="player-wrapper">
-                <video id="player" controls autoplay></video>
-                <div id="sem-video" class="sem-video">Selecione um canal para assistir</div>
+                <video id="player" controls autoplay playsinline></video>
+                <div id="estado-player" class="estado-player">
+                    ▶️ Selecione um canal ao lado<br>
+                    <small>Clique em qualquer canal e ele abrirá automaticamente aqui</small>
+                </div>
             </div>
+
             <div class="info-canal">
-                <strong>Canal:</strong> <span id="nome-atual">—</span><br>
-                <strong>URL:</strong> <span id="url-atual" style="font-size:0.75rem; word-break:break-all;">—</span>
+                <strong>📡 Canal:</strong> <span id="nome-atual">— Nenhum canal selecionado</span><br>
+                <strong>🔗 Link:</strong> <span id="url-atual" style="font-size:0.75rem; word-break:break-all;">—</span>
+                <div class="barra-status">
+                    <strong>Status:</strong> <span id="status-player">Aguardando seleção...</span>
+                </div>
             </div>
         </main>
     </div>
 
+<!-- Biblioteca HLS para abrir streams .m3u8 -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.21/dist/hls.min.js"></script>
 <script>
 let canais = [];
 let hls = null;
+let canalAtual = null;
 
-// Carregar dados salvos ao abrir
+// Carregar lista salva ao abrir a página
 window.onload = () => {
     const salvo = localStorage.getItem('canais-iptv');
-    if(salvo) canais = JSON.parse(salvo);
-    renderizarLista();
+    if(salvo) {
+        canais = JSON.parse(salvo);
+        atualizarTotal();
+        renderizarLista();
+    }
 };
 
-function salvar() {
+function salvarLista() {
     localStorage.setItem('canais-iptv', JSON.stringify(canais));
+    atualizarTotal();
+}
+
+function atualizarTotal() {
+    document.getElementById('total-canais').textContent = `${canais.length} canais`;
 }
 
 function adicionarCanal(){
     const nome = document.getElementById('nome-canal').value.trim();
     const url = document.getElementById('url-canal').value.trim();
-    if(!nome || !url) { alert('Preencha nome e URL!'); return; }
 
-    canais.push({nome, url});
-    salvar();
+    if(!nome || !url) {
+        alert('⚠️ PREENCHA NOME E URL DO CANAL!');
+        return;
+    }
+
+    canais.push({ nome, url });
+    salvarLista();
     renderizarLista();
 
+    // Limpar campos
     document.getElementById('nome-canal').value = '';
     document.getElementById('url-canal').value = '';
+
+    // ✅ ABRIR AUTOMATICAMENTE O CANAL RECÉM-ADICIONADO
+    const novoCanal = canais[canais.length - 1];
+    reproduzirCanal(novoCanal);
 }
 
 function carregarM3U(){
     const arq = document.getElementById('arquivo-m3u').files[0];
-    if(!arq) return;
+    if(!arq) { alert('Selecione um arquivo .m3u primeiro!'); return; }
+
     const leitor = new FileReader();
     leitor.onload = e => {
         const texto = e.target.result;
         const linhas = texto.split('\n');
-        let nome = '', cont = 0;
-        linhas.forEach(l => {
-            l = l.trim();
-            if(l.startsWith('#EXTINF')){
-                nome = l.split(',')[1] || `Canal ${++cont}`;
-            } else if(l.startsWith('http')){
-                canais.push({nome, url: l});
-                nome = '';
+        let nomeCanal = '', cont = 0;
+
+        linhas.forEach(linha => {
+            linha = linha.trim();
+            if(linha.startsWith('#EXTINF')){
+                const partes = linha.split(',');
+                nomeCanal = partes.length > 1 ? partes[1].trim() : `Canal ${++cont}`;
+            } else if(linha.startsWith('http') && linha.includes('://')){
+                canais.push({ nome: nomeCanal || `Canal ${++cont}`, url: linha });
+                nomeCanal = '';
             }
         });
-        salvar();
+
+        salvarLista();
         renderizarLista();
-        alert(`Importado! Total: ${canais.length} canais`);
+        alert(`✅ Lista importada! ${canais.length} canais carregados.`);
     };
     leitor.readAsText(arq);
 }
@@ -148,54 +196,143 @@ function carregarM3U(){
 function renderizarLista(){
     const el = document.getElementById('lista');
     el.innerHTML = '';
-    canais.forEach((c, i)=>{
+
+    canais.forEach((canal, indice) => {
         const item = document.createElement('div');
-        item.className = 'item-canal';
-        item.innerHTML = `<span title="${c.nome}">📡 ${c.nome}</span>
-        <div>
-            <button style="width:auto; padding:0.2rem 0.5rem; margin:0; background:#ffc107; color:#000;" onclick="event.stopPropagation(); removerCanal(${i})">✕</button>
-        </div>`;
-        item.onclick = () => reproduzir(c);
+        item.className = 'item-canal' + (canalAtual === indice ? ' ativo' : '');
+        item.innerHTML = `
+            <span title="${canal.nome}">📡 ${canal.nome}</span>
+            <button class="btn-mini" onclick="event.stopPropagation(); removerCanal(${indice})">✕</button>
+        `;
+        // ✅ CLIQUE = ABRIR CANAL
+        item.onclick = () => reproduzirCanal(canal, indice);
         el.appendChild(item);
     });
-    document.getElementById('total-canais').textContent = `${canais.length} canais`;
 }
 
-function removerCanal(i){
-    if(confirm('Remover este canal?')){
-        canais.splice(i,1);
-        salvar();
+function removerCanal(indice){
+    if(confirm('Remover este canal da lista?')){
+        canais.splice(indice, 1);
+        if(canalAtual === indice) {
+            canalAtual = null;
+            pararPlayer();
+        }
+        salvarLista();
         renderizarLista();
     }
 }
 
 function limparLista(){
-    if(confirm('Remover TODOS os canais?')){
+    if(confirm('⚠️ TEM CERTEZA? Vai apagar TODOS os canais?')){
         canais = [];
-        salvar();
+        canalAtual = null;
+        pararPlayer();
+        salvarLista();
         renderizarLista();
     }
 }
 
-function reproduzir(canal){
+// ✅ FUNÇÃO PRINCIPAL — ABRE E REPRODUZ O CANAL
+function reproduzirCanal(canal, indice = -1){
+    canalAtual = indice;
+    renderizarLista(); // destacar canal ativo
+
     const player = document.getElementById('player');
-    document.getElementById('sem-video').style.display = 'none';
+    const estado = document.getElementById('estado-player');
+    const status = document.getElementById('status-player');
+
+    // Atualizar informações na tela
     document.getElementById('nome-atual').textContent = canal.nome;
     document.getElementById('url-atual').textContent = canal.url;
 
-    if(hls) hls.destroy();
+    // Exibir mensagem de carregamento
+    estado.style.display = 'block';
+    estado.className = 'estado-player carregando';
+    estado.innerHTML = `⏳ Carregando: <strong>${canal.nome}</strong><br><small>Abrindo stream... aguarde uns instantes</small>`;
+    status.innerHTML = '<span class="carregando">⏳ Conectando...</span>';
 
-    if(Hls.isSupported()){
-        hls = new Hls();
+    // Parar reprodução anterior
+    if(hls) {
+        hls.stopLoad();
+        hls.detachMedia();
+        hls.destroy();
+        hls = null;
+    }
+    player.pause();
+    player.src = '';
+
+    // Detecção de formato e reprodução
+    const link = canal.url.toLowerCase();
+
+    if(Hls.isSupported() && (link.includes('.m3u8') || link.includes('m3u8'))) {
+        // Formato HLS (.m3u8) — o mais comum em IPTV
+        hls = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 60 });
         hls.loadSource(canal.url);
         hls.attachMedia(player);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => player.play());
-        hls.on(Hls.Events.ERROR, (e,d)=>{ if(d.fatal) alert('Erro ao reproduzir!'); });
-    } else if(player.canPlayType('application/vnd.apple.mpegurl')){
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            estado.className = 'estado-player sucesso';
+            estado.style.display = 'none';
+            status.innerHTML = '<span class="status-ok">✅ CANAL ABERTO — Reproduzindo</span>';
+            player.play().catch(() => {
+                estado.style.display = 'block';
+                estado.className = 'estado-player';
+                estado.innerHTML = '▶️ Clique no botão de play acima ▲';
+            });
+        });
+
+        hls.on(Hls.Events.ERROR, (event, dados) => {
+            if(dados.fatal) {
+                estado.className = 'estado-player erro';
+                estado.innerHTML = `❌ Erro ao abrir o canal<br><small>Link pode estar offline ou bloqueado</small>`;
+                status.innerHTML = '<span class="status-erro">❌ Falha na reprodução</span>';
+            }
+        });
+
+    } else if (player.canPlayType('application/vnd.apple.mpegurl') && (link.includes('.m3u8') || link.includes('m3u8'))) {
+        // Safari / navegadores nativos com suporte HLS
         player.src = canal.url;
+        player.onloadedmetadata = () => {
+            estado.className = 'estado-player sucesso';
+            estado.style.display = 'none';
+            status.innerHTML = '<span class="status-ok">✅ CANAL ABERTO</span>';
+            player.play().catch(()=>{});
+        };
+        player.onerror = () => {
+            estado.className = 'estado-player erro';
+            estado.innerHTML = '❌ Não foi possível abrir este canal';
+            status.innerHTML = '<span class="status-erro">❌ Link indisponível</span>';
+        };
+
     } else {
+        // Outros formatos (MP4, TS, etc)
         player.src = canal.url;
+        player.onloadedmetadata = () => {
+            estado.className = 'estado-player sucesso';
+            estado.style.display = 'none';
+            status.innerHTML = '<span class="status-ok">✅ CANAL ABERTO</span>';
+            player.play().catch(()=>{});
+        };
+        player.onerror = () => {
+            estado.className = 'estado-player erro';
+            estado.innerHTML = `❌ Formato não suportado ou link indisponível<br><small>Tente usar navegador Chrome/Edge</small>`;
+            status.innerHTML = '<span class="status-erro">❌ Não foi possível reproduzir</span>';
+        };
     }
+}
+
+function pararPlayer(){
+    if(hls) { hls.destroy(); hls = null; }
+    const player = document.getElementById('player');
+    player.pause();
+    player.src = '';
+
+    document.getElementById('estado-player').style.display = 'block';
+    document.getElementById('estado-player').className = 'estado-player';
+    document.getElementById('estado-player').innerHTML = '▶️ Selecione um canal ao lado';
+    document.getElementById('nome-atual').textContent = '— Nenhum canal selecionado';
+    document.getElementById('url-atual').textContent = '—';
+    document.getElementById('status-player').innerHTML = 'Aguardando seleção...';
 }
 </script>
 </body>
